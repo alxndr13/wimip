@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,6 +18,8 @@ type ipResp struct {
 	IP string `json:"ip"`
 }
 
+var routesJson = map[string]interface{}{}
+
 func main() {
 	log.Println("Starting wimip..")
 	r := mux.NewRouter()
@@ -29,13 +32,14 @@ func main() {
 		if err != nil {
 			return err
 		}
-		log.Println("Available Route:", t)
 		definedRoutes = append(definedRoutes, t)
 		return nil
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
+	routesJson["routes"] = definedRoutes
+	log.Println("Starting on localhost:3000")
 	log.Fatalln(http.ListenAndServe("localhost:3000", r))
 }
 
@@ -50,7 +54,12 @@ func loggingMiddleware(next http.Handler) http.Handler {
 // handlers
 func indexhandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(indexResp{Message: "Welcome to wimip"})
+	pretty, err := json.MarshalIndent(routesJson, "", "   ")
+	if err != nil {
+		log.Warnln("Could not prettify json. Will return normal json")
+		json.NewEncoder(w).Encode(routesJson)
+	}
+	fmt.Fprintf(w, string(pretty))
 }
 
 func wimiphandler(w http.ResponseWriter, r *http.Request) {
