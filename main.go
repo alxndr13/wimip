@@ -18,7 +18,7 @@ type ipResp struct {
 	IP string `json:"ip"`
 }
 
-var routesJson = map[string]interface{}{}
+var routesJSON = map[string]interface{}{}
 
 func main() {
 	log.SetFormatter(&log.TextFormatter{})
@@ -50,7 +50,7 @@ func generateListOfRoutes(r *mux.Router) error {
 		log.Fatalln(err)
 		return err
 	}
-	routesJson["routes"] = definedRoutes
+	routesJSON["routes"] = definedRoutes
 	return nil
 }
 
@@ -66,10 +66,10 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func indexhandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	// return pretty JSON, if possible
-	pretty, err := json.MarshalIndent(routesJson, "", "   ")
+	pretty, err := json.MarshalIndent(routesJSON, "", "   ")
 	if err != nil {
 		log.Warnln("Could not prettify json. Will return normal json")
-		json.NewEncoder(w).Encode(routesJson)
+		json.NewEncoder(w).Encode(routesJSON)
 	}
 	fmt.Fprintf(w, string(pretty))
 }
